@@ -9,7 +9,8 @@
     "biome:check": "biome check .",
     "biome:fix": "biome check --write .",
     "build": "pnpm -r build",
-    "type-check": "tsc  --noEmit"
+    "type:check": "tsc  --noEmit",
+    "commit:check": "pnpm biome:fix && pnpm type:check && pnpm build"
   },
   "repository": {
     "type": "git",
