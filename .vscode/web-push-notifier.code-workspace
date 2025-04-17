@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "path": "../packages/web-push",
+    },
+    {
+      "path": "..",
+    },
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib"
+  },
+}
