@@ -7,7 +7,9 @@
     "biome:lint": "biome lint .",
     "biome:format": "biome format . --write",
     "biome:check": "biome check .",
-    "biome:fix": "biome check --write ."
+    "biome:fix": "biome check --write .",
+    "build": "pnpm -r build",
+    "type-check": "tsc  --noEmit"
   },
   "repository": {
     "type": "git",

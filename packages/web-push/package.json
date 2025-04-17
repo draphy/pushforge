@@ -1,0 +1,24 @@
+{
+  "name": "@draphy/web-push-notifier",
+  "version": "1.0.0",
+  "private": false,
+  "bugs": {
+    "url": "https://github.com/draphy/web-push-notifier/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/draphy/web-push-notifier"
+  },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/lib/main.d.ts",
+      "default": "./dist/lib/main.js"
+    }
+  },
+  "files": ["dist/lib/**/*.js", "dist/lib/**/*.d.ts"],
+  "scripts": {
+    "build": "tsc --build"
+  }
+}
