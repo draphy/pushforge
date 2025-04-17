@@ -1,0 +1,12 @@
+{
+  "extends": "@tsconfig/node20",
+  "files": [],
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "references": [
+    {
+      "path": "./packages/web-push"
+    }
+  ]
+}

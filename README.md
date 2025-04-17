@@ -1,1 +1,1 @@
-# web-push-notifier
+# Web Push Notifier

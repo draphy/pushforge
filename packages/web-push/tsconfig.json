@@ -1,0 +1,10 @@
+{
+  "extends": "@tsconfig/node20",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "composite": true,
+    "types": [] /* attempt to be isomorhpic */
+  },
+  "include": ["./lib"],
+  "exclude": ["./dist"]
+}
