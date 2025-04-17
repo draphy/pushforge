@@ -20,7 +20,7 @@ jobs:
           VALID_TYPES="feat|fix|bug|doc|ci|release|test"
 
           # Regular expression pattern for PR title validation
-          if ! [[ "$PR_TITLE" =~ ^($VALID_TYPES): \[(WPN-[0-9]+(, WPN-[0-9]+)*)\] [A-Z].+ ]]; then
+          if ! [[ "$PR_TITLE" =~ ^($VALID_TYPES): \[(WPN-[0-9]+(, WPN-[0-9]+)*)\] [A-Z].* ]]; then
             echo "::error::PR title does not match the required pattern!"
             echo "::error::Required format: <type>: [<issue-number>] <title>"
             echo "::error::Where:"
