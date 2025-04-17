@@ -8,39 +8,34 @@ jobs:
   pr-title-check:
     name: PR Title Check
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     steps:
       - name: Check PR Title
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const title = context.payload.pull_request.title;
-            const pattern = /^(feat|fix|bug|doc|ci|release|test): \[(WPN-[0-9]+(, WPN-[0-9]+)*)\] [A-Z].+$/;
+        shell: bash
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "Checking PR title: $PR_TITLE"
 
-            if (!pattern.test(title)) {
-              const validTypes = ['feat', 'fix', 'bug', 'doc', 'ci', 'release', 'test'];
-              const examples = [
-                'feat: [WPN-1] Implement user authentication',
-                'fix: [WPN-42] Fix memory leak in notification service',
-                'doc: [WPN-7, WPN-8] Update API documentation',
-                'ci: [WPN-15] Add performance testing to pipeline'
-              ];
-              
-              core.setFailed(`
-                PR title does not match the required pattern!
-                
-                Required format: <type>: [<issue-number>] <title>
-                
-                Where:
-                - type: Must be one of: ${validTypes.join(', ')}
-                - issue-number: Must be WPN-X or multiple like [WPN-1, WPN-2]
-                - title: Must start with a capital letter
-                
-                Valid examples:
-                ${examples.map(ex => `- ${ex}`).join('\n                ')}
-                
-                Your title: "${title}"
-              `);
-            } else {
-              console.log('✅ PR title format is valid!');
-            }
+          # Define valid types
+          VALID_TYPES="feat|fix|bug|doc|ci|release|test"
+
+          # Regular expression pattern for PR title validation
+          if ! [[ "$PR_TITLE" =~ ^($VALID_TYPES): \[(WPN-[0-9]+(, WPN-[0-9]+)*)\] [A-Z].+ ]]; then
+            echo "::error::PR title does not match the required pattern!"
+            echo "::error::Required format: <type>: [<issue-number>] <title>"
+            echo "::error::Where:"
+            echo "::error::- type: Must be one of: feat, fix, bug, doc, ci, release, test"
+            echo "::error::- issue-number: Must be WPN-X or multiple like [WPN-1, WPN-2]"
+            echo "::error::- title: Must start with a capital letter"
+            echo "::error::"
+            echo "::error::Valid examples:"
+            echo "::error::- feat: [WPN-1] Implement user authentication"
+            echo "::error::- fix: [WPN-42] Fix memory leak in notification service"
+            echo "::error::- doc: [WPN-7, WPN-8] Update API documentation"
+            echo "::error::- ci: [WPN-15] Add performance testing to pipeline"
+            echo "::error::"
+            echo "::error::Your title: \"$PR_TITLE\""
+            exit 1
+          else
+            echo "✅ PR title format is valid!"
+          fi
