@@ -44,3 +44,17 @@ jobs:
           else
             echo "✅ PR title format is valid!"
           fi
+
+  label-merge-conflicts:
+    name: Has Conflicts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Merge Conflicts
+        uses: prince-chrismc/label-merge-conflicts-action@v3
+        with:
+          conflict_label_name: "conflicts"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          conflict_comment: |
+            :wave: Hi, @${{ github.actor }},
+            I detected conflicts against the base branch :speak_no_evil:
+            You'll want to sync :arrows_counterclockwise: your branch with upstream!
