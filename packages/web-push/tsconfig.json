@@ -1,9 +1,17 @@
 {
-  "extends": "@tsconfig/node20",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "_version": "22.0.0",
   "compilerOptions": {
+    "lib": ["es2023"],
+    "module": "nodenext",
+    "target": "es2022",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node16",
     "outDir": "./dist",
     "composite": true,
-    "types": [] /* attempt to be isomorhpic */
+    "types": [] /* isomorhpic */
   },
   "include": ["./lib"],
   "exclude": ["./dist"]

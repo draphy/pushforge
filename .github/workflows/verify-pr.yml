@@ -17,22 +17,27 @@ jobs:
           echo "Checking PR title: $PR_TITLE"
 
           # Define valid types
-          VALID_TYPES="feat|fix|bug|doc|ci|release|test"
+          VALID_TYPES="feat|fix|bug|docs|test|ci|refactor|perf|chore|revert|release"
 
           # Regular expression pattern for PR title validation
           if ! [[ "$PR_TITLE" =~ ^($VALID_TYPES):[[:space:]]\[(WPN-[0-9]+(,[[:space:]]*WPN-[0-9]+)*)\][[:space:]][A-Z].* ]]; then
             echo "::error::PR title does not match the required pattern!"
             echo "::error::Required format: <type>: [<issue-number>] <title>"
             echo "::error::Where:"
-            echo "::error::- type: Must be one of: feat, fix, bug, doc, ci, release, test"
+            echo "::error::- type: Must be one of: feat, fix, bug, docs, test, ci, refactor, perf, chore, revert, release"
             echo "::error::- issue-number: Must be WPN-X or multiple like [WPN-1, WPN-2]"
             echo "::error::- title: Must start with a capital letter"
             echo "::error::"
             echo "::error::Valid examples:"
             echo "::error::- feat: [WPN-1] Implement user authentication"
             echo "::error::- fix: [WPN-42] Fix memory leak in notification service"
-            echo "::error::- doc: [WPN-7, WPN-8] Update API documentation"
+            echo "::error::- docs: [WPN-7, WPN-8] Update API documentation"
             echo "::error::- ci: [WPN-15] Add performance testing to pipeline"
+            echo "::error::- refactor: [WPN-20] Refactor code for better readability"
+            echo "::error::- perf: [WPN-30] Improve performance of data processing"
+            echo "::error::- chore: [WPN-40] Update dependencies"
+            echo "::error::- revert: [WPN-50] Revert changes from WPN-10"
+            echo "::error::- release: [WPN-60] Prepare for release"
             echo "::error::"
             echo "::error::Your title: \"$PR_TITLE\""
             exit 1
