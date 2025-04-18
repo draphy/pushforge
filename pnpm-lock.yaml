@@ -11,9 +11,6 @@ importers:
       '@biomejs/biome':
         specifier: ^1.9.4
         version: 1.9.4
-      '@tsconfig/node20':
-        specifier: ^20.1.5
-        version: 20.1.5
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -75,9 +72,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@tsconfig/node20@20.1.5':
-    resolution: {integrity: sha512-Vm8e3WxDTqMGPU4GATF9keQAIy1Drd7bPwlgzKJnZtoOsTm1tduUTbDjg0W5qERvGuxPI2h9RbMufH0YdfBylA==}
-
   typescript@5.8.3:
     resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
     engines: {node: '>=14.17'}
@@ -119,7 +113,5 @@ snapshots:
 
   '@biomejs/cli-win32-x64@1.9.4':
     optional: true
-
-  '@tsconfig/node20@20.1.5': {}
 
   typescript@5.8.3: {}
