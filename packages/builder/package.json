@@ -20,5 +20,8 @@
   "files": ["dist/lib/**/*.js", "dist/lib/**/*.d.ts"],
   "scripts": {
     "build": "tsc --build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1"
   }
 }
