@@ -8,7 +8,6 @@ import type { BuilderOptions, PushOptions } from './types.js';
  * @param {JsonWebKey | string} options.privateJWK - The private JSON Web Key (JWK) used for signing.
  * @param {PushMessage} options.message - The message to be sent in the push notification with user defined options.
  * @param {PushSubscription} options.subscription - The subscription details for the push notification.
- * @returns {Promise<Response>} A promise that resolves to the response of the HTTP request.
  *
  * @throws {Error} Throws an error if the privateJWK is invalid or if the request fails.
  */
