@@ -1,4 +1,5 @@
 import { crypto } from './crypto.js';
+import { encryptPayload } from './payload.js';
 import type { BuilderOptions, PushOptions } from './types.js';
 
 /**
@@ -48,5 +49,11 @@ export async function buildPushHTTPRequest({
     { name: 'ECDH', namedCurve: 'P-256' },
     true,
     ['deriveBits'],
+  );
+  const body = await encryptPayload(
+    localKeys,
+    salt,
+    options.payload,
+    subscription,
   );
 }

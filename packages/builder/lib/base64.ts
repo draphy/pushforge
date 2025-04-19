@@ -36,10 +36,10 @@ export const base64UrlEncode = (
  * the appropriate decoding method based on the environment.
  *
  * @param {string | undefined} s - The Base64 URL encoded string to decode.
- * @returns {Uint8Array} The decoded data as a Uint8Array.
+ * @returns {string} The decoded data as a string.
  * @throws {Error} Throws an error if the input string is invalid.
  */
-export const base64UrlDecodeString = (s: string | undefined) => {
+export const base64UrlDecodeString = (s: string | undefined): string => {
   if (!s) throw new Error('Invalid input');
   return (
     s.replace(/-/g, '+').replace(/_/g, '/') +

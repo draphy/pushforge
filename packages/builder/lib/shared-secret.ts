@@ -14,7 +14,7 @@ import { crypto } from './crypto.js';
 export const deriveSharedSecret = async (
   clientPublicKey: CryptoKey,
   localPrivateKey: CryptoKey,
-) => {
+): Promise<CryptoKey> => {
   const sharedSecretBytes = await crypto.subtle.deriveBits(
     { name: 'ECDH', public: clientPublicKey },
     localPrivateKey,
