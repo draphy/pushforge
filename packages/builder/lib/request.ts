@@ -1,4 +1,5 @@
 import { crypto } from './crypto.js';
+import { encryptPayload } from './payload.js';
 import type { BuilderOptions, PushOptions } from './types.js';
 
 /**
@@ -8,7 +9,6 @@ import type { BuilderOptions, PushOptions } from './types.js';
  * @param {JsonWebKey | string} options.privateJWK - The private JSON Web Key (JWK) used for signing.
  * @param {PushMessage} options.message - The message to be sent in the push notification with user defined options.
  * @param {PushSubscription} options.subscription - The subscription details for the push notification.
- * @returns {Promise<Response>} A promise that resolves to the response of the HTTP request.
  *
  * @throws {Error} Throws an error if the privateJWK is invalid or if the request fails.
  */
@@ -49,5 +49,11 @@ export async function buildPushHTTPRequest({
     { name: 'ECDH', namedCurve: 'P-256' },
     true,
     ['deriveBits'],
+  );
+  const body = await encryptPayload(
+    localKeys,
+    salt,
+    options.payload,
+    subscription,
   );
 }
