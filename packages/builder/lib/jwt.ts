@@ -8,6 +8,11 @@ import type { JwtData } from './types.js';
  * This function takes a JSON Web Key (JWK) and JWT data, encodes them,
  * and signs the token using the specified algorithm and hash function.
  *
+ * In the Web Push protocol, the VAPID JWT includes an `exp` (expiration) claim
+ * that specifies the token's validity period. According to the VAPID specification,
+ * the `exp` value must not exceed 24 hours from the time of the request. If it does,
+ * the push service (like FCM) will reject the request with a 403 Forbidden error.
+ *
  * @param {JsonWebKey} jwk - The JSON Web Key used for signing the JWT.
  * @param {JwtData} jwtData - The data to be included in the JWT payload.
  * @returns {Promise<string>} A promise that resolves to the signed JWT as a string.
