@@ -16,6 +16,46 @@ import { vapidHeaders } from './vapid.js';
  * @returns {Promise<{ endpoint: string, body: ArrayBuffer, headers: Record<string, string> | Headers }>} A promise that resolves to an object containing the endpoint, encrypted body, and headers for the push notification.
  *
  * @throws {Error} Throws an error if the privateJWK is invalid, if the request fails, or if the payload encryption fails.
+ *
+ * @example
+ * // Example usage
+ * const privateJWK = '{"kty":"EC","crv":"P-256","d":"_eQ..."}'; // Your private VAPID key
+ *
+ * const message = {
+ *   payload: {
+ *     title: "New Message",
+ *     body: "You have a new message!",
+ *     icon: "/images/icon.png"
+ *   },
+ *   options: {
+ *     ttl: 3600, // 1 hour in seconds
+ *     urgency: "high",
+ *     topic: "new-messages"
+ *   },
+ *   adminContact: "mailto:admin@example.com"
+ * };
+ *
+ * const subscription = {
+ *   endpoint: "https://fcm.googleapis.com/fcm/send/...",
+ *   keys: {
+ *     p256dh: "BNn5....",
+ *     auth: "tBHI...."
+ *   }
+ * };
+ *
+ * // Build the request
+ * const request = await buildPushHTTPRequest({
+ *   privateJWK,
+ *   message,
+ *   subscription
+ * });
+ *
+ * // Send the push notification
+ * const response = await fetch(request.endpoint, {
+ *   method: 'POST',
+ *   headers: request.headers,
+ *   body: request.body
+ * });
  */
 export async function buildPushHTTPRequest({
   privateJWK,
@@ -30,11 +70,17 @@ export async function buildPushHTTPRequest({
   const jwk: JsonWebKey =
     typeof privateJWK === 'string' ? JSON.parse(privateJWK) : privateJWK;
 
+  const MAX_TTL = 24 * 60 * 60;
+
+  if (message.options?.ttl && message.options.ttl > MAX_TTL) {
+    throw new Error('TTL must be less than 24 hours');
+  }
+
   // Determine the time-to-live (TTL) for the push notification
   const ttl =
     message.options?.ttl && message.options.ttl > 0
       ? message.options.ttl
-      : 24 * 60 * 60; // Default to 24 hours
+      : MAX_TTL; // Default to 24 hours
 
   // Create the JWT payload
   const jwt = {

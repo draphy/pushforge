@@ -43,6 +43,11 @@ export interface PushMessage<T extends Jsonifiable = Jsonifiable> {
   options?: RequireAtLeastOne<{
     /**
      * The time-to-live for the push message in seconds.
+     * Must be a positive number greater than 0.
+     * Default value is 24 * 60 * 60 (24 hours).
+     * If set to 0, undefined, or a negative value, it will default to 24 hours.
+     * The VAPID JWT expiration claim (`exp`) must not exceed 24 hours from the time of the request.
+     * If it does, the push service (like FCM) will reject the request with a 403 Forbidden error.
      */
     ttl?: PushOptions['ttl'];
 
@@ -70,6 +75,8 @@ export interface JwtData {
   /**
    * The expiration time of the JWT, in seconds.
    * This prevents reuse of the JWT after it has expired.
+   * The `exp` value must not exceed 24 hours from the time of the request.
+   * If it does, the push service (like FCM) will reject the request with a 403 Forbidden error.
    */
   exp: number;
 
@@ -104,6 +111,8 @@ export interface PushOptions {
    * Must be a positive number greater than 0.
    * Default value is 24 * 60 * 60 (24 hours).
    * If set to 0, undefined, or a negative value, it will default to 24 hours.
+   * The VAPID JWT expiration claim (`exp`) must not exceed 24 hours from the time of the request.
+   * If it does, the push service (like FCM) will reject the request with a 403 Forbidden error.
    */
   ttl: number;
 
