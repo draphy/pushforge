@@ -25,13 +25,16 @@
   },
   "files": ["dist/lib/**/*.js", "dist/lib/**/*.d.ts"],
   "scripts": {
-    "build": "tsc --build"
+    "build": "tsc --build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "bin": {
     "generate-vapid-keys": "./lib/commandLine/keys.js"
   },
   "devDependencies": {
-    "@types/node": "^22.14.1"
+    "@types/node": "^22.14.1",
+    "vitest": "^3.1.2"
   },
   "keywords": [
     "web push",
