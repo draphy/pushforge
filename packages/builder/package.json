@@ -1,9 +1,9 @@
 {
   "name": "@pushforge/builder",
-  "version": "0.1.0",
+  "version": "0.0.0-development",
   "description": "A robust, cross-platform Web Push notification library that handles VAPID authentication and payload encryption following the Web Push Protocol standard. Works in Node.js 16+, Browsers, Deno, Bun and Cloudflare Workers.",
   "private": false,
-  "main": "lib/main.ts",
+  "main": "dist/lib/main.js",
   "module": "dist/lib/main.js",
   "types": "dist/lib/main.d.ts",
   "author": "David Raphi",
@@ -23,17 +23,26 @@
       "default": "./dist/lib/main.js"
     }
   },
-  "files": ["dist/lib/**/*.js", "dist/lib/**/*.d.ts"],
+  "files": ["dist/lib/**/*.js", "dist/lib/**/*.d.ts", "README.md", "LICENSE"],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc --build",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "semantic-release": "semantic-release"
   },
   "bin": {
-    "generate-vapid-keys": "./lib/commandLine/keys.js"
+    "generate-vapid-keys": "./dist/lib/commandLine/keys.js"
   },
   "devDependencies": {
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/github": "^9.2.6",
+    "@semantic-release/npm": "^11.0.3",
+    "@semantic-release/release-notes-generator": "^12.1.0",
     "@types/node": "^22.14.1",
+    "semantic-release": "^24.2.3",
     "vitest": "^3.1.2"
   },
   "keywords": [
