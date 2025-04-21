@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![PushForge Logo](images/pushforge_logo.png)
+<img src="images/pushforge_logo.png" alt="PushForge Logo" width="150" />
 
 **Modern, Cross-Platform Web Push Notifications**
 
@@ -53,7 +53,7 @@ pushforge/
 ├── packages/
 │   └── builder/         # Core push notification builder
 │       ├── lib/         # Source code
-│       ├── examples/    # Usage examples (coming soon)
+│       ├── examples/    # Usage examples (coming soon...)
 │       └── README.md    # Package documentation
 └── README.md            # This file
 ```
