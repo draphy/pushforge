@@ -172,11 +172,3 @@ jobs:
         run: |
           echo "::error::Integration tests failed for @pushforge/builder package"
           exit 1
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: packages/builder/__snapshots__
-          if-no-files-found: ignore
