@@ -42,6 +42,54 @@ export const stringFromArrayBuffer = (s: ArrayBuffer | Uint8Array): string => {
 };
 
 /**
+ * Cross-platform function to decode a Base64 string into a binary string.
+ * Works in both browser and Node.js environments.
+ *
+ * @param {string} base64String - The Base64 encoded string to decode.
+ * @returns {string} The decoded binary string.
+ */
+export const base64Decode = (base64String: string): string => {
+  // Add padding if needed
+  const paddedBase64 = base64String.padEnd(
+    base64String.length + ((4 - (base64String.length % 4 || 4)) % 4),
+    '=',
+  );
+
+  // Node.js environment
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(paddedBase64, 'base64').toString('binary');
+  }
+
+  // Browser environment
+  if (typeof atob === 'function') {
+    return atob(paddedBase64);
+  }
+
+  // Pure JavaScript implementation for environments without atob or Buffer
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+  let result = '';
+  let i = 0;
+
+  while (i < paddedBase64.length) {
+    const enc1 = characters.indexOf(paddedBase64.charAt(i++));
+    const enc2 = characters.indexOf(paddedBase64.charAt(i++));
+    const enc3 = characters.indexOf(paddedBase64.charAt(i++));
+    const enc4 = characters.indexOf(paddedBase64.charAt(i++));
+
+    const char1 = (enc1 << 2) | (enc2 >> 4);
+    const char2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+    const char3 = ((enc3 & 3) << 6) | enc4;
+
+    result += String.fromCharCode(char1);
+    if (enc3 !== 64) result += String.fromCharCode(char2);
+    if (enc4 !== 64) result += String.fromCharCode(char3);
+  }
+
+  return result;
+};
+
+/**
  * Extracts the public key from a JSON Web Key (JWK) and encodes it in base64 URL format.
  *
  * @param {JsonWebKey} jwk - The JSON Web Key from which to extract the public key.
@@ -49,7 +97,7 @@ export const stringFromArrayBuffer = (s: ArrayBuffer | Uint8Array): string => {
  */
 export const getPublicKeyFromJwk = (jwk: JsonWebKey): string =>
   base64UrlEncode(
-    `\x04${atob(base64UrlDecodeString(jwk.x))}${atob(base64UrlDecodeString(jwk.y))}`,
+    `\x04${base64Decode(base64UrlDecodeString(jwk.x))}${base64Decode(base64UrlDecodeString(jwk.y))}`,
   );
 
 /**
