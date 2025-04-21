@@ -53,7 +53,7 @@ pushforge/
 ├── packages/
 │   └── builder/         # Core push notification builder
 │       ├── lib/         # Source code
-│       ├── examples/    # Usage examples (coming soon)
+│       ├── examples/    # Usage examples (coming soon...)
 │       └── README.md    # Package documentation
 └── README.md            # This file
 ```
