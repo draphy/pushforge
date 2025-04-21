@@ -1,6 +1,6 @@
 {
   "name": "@pushforge/builder",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A robust, cross-platform Web Push notification library that handles VAPID authentication and payload encryption following the Web Push Protocol standard. Works in Node.js 16+, Browsers, Deno, Bun and Cloudflare Workers.",
   "private": false,
   "main": "lib/main.ts",
@@ -37,16 +37,16 @@
     "vitest": "^3.1.2"
   },
   "keywords": [
-    "web push",
+    "web-push",
     "webcrypto",
     "vapid",
-    "web push protocol",
+    "web-push-protocol",
     "typescript",
     "node",
     "cloudflare",
     "browser",
     "ecdh",
     "hkdf",
-    "push service"
+    "push-service"
   ]
 }
