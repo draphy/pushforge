@@ -123,3 +123,52 @@ jobs:
 
       - name: Build packages
         run: pnpm build
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [build] # Run after build completes successfully
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: "10.8.1"
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages (required for tests)
+        run: pnpm build
+
+      - name: Run integration tests for @pushforge/builder
+        id: run-tests
+        run: cd packages/builder && pnpm test
+        continue-on-error: true
+
+      - name: Check test results
+        if: steps.run-tests.outcome != 'success'
+        run: |
+          echo "::error::Integration tests failed for @pushforge/builder package"
+          exit 1

@@ -59,23 +59,6 @@ const getPublicKeyFromJwk = (jwk) =>
     `\x04${base64Decode(base64UrlDecodeString(jwk.x))}${base64Decode(base64UrlDecodeString(jwk.y))}`,
   );
 
-// Simple box drawing function without external dependencies
-const drawBox = (text) => {
-  const lines = text.split('\n');
-  const width = Math.max(...lines.map((line) => line.length));
-
-  const top = `┌${'─'.repeat(width + 2)}┐`;
-  const bottom = `└${'─'.repeat(width + 2)}┘`;
-
-  const boxedLines = [
-    top,
-    ...lines.map((line) => `│ ${line.padEnd(width)} │`),
-    bottom,
-  ];
-
-  return boxedLines.join('\n');
-};
-
 async function generateVapidKeys() {
   try {
     console.log('Generating VAPID keys...');
@@ -106,7 +89,7 @@ ${JSON.stringify(privateJWKWithAlg, null, 2)}
 Store these keys securely. Never expose your private key.
 `;
 
-    console.log(drawBox(resultText));
+    console.log(resultText);
   } catch (error) {
     console.error('Error generating VAPID keys:');
     console.error(error.message);
