@@ -1,7 +1,12 @@
 {
-  "name": "pushforge/builder",
+  "name": "@pushforge/builder",
   "version": "1.0.0",
+  "description": "A robust, cross-platform Web Push notification library that handles VAPID authentication and payload encryption following the Web Push Protocol standard. Works in Node.js 16+, Browsers, Deno, Bun and Cloudflare Workers.",
   "private": false,
+  "main": "lib/main.ts",
+  "module": "dist/lib/main.js",
+  "types": "dist/lib/main.d.ts",
+  "author": "David Raphi",
   "bugs": {
     "url": "https://github.com/draphy/pushforge/issues"
   },
@@ -9,6 +14,7 @@
     "type": "git",
     "url": "https://github.com/draphy/pushforge"
   },
+  "homepage": "https://github.com/draphy/pushforge",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -21,7 +27,23 @@
   "scripts": {
     "build": "tsc --build"
   },
+  "bin": {
+    "generate-vapid-keys": "./lib/commandLine/keys.js"
+  },
   "devDependencies": {
     "@types/node": "^22.14.1"
-  }
+  },
+  "keywords": [
+    "web push",
+    "webcrypto",
+    "vapid",
+    "web push protocol",
+    "typescript",
+    "node",
+    "cloudflare",
+    "browser",
+    "ecdh",
+    "hkdf",
+    "push service"
+  ]
 }
