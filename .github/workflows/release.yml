@@ -3,7 +3,7 @@ name: Package Release
 on:
   push:
     branches:
-      - release
+      - latest-release
       - beta
 
 permissions:

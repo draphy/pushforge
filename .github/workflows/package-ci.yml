@@ -2,12 +2,12 @@ name: Package Validity
 
 on:
   push:
-    branches: ["master", "release", "beta"]
+    branches: ["master", "latest-release", "beta"]
     paths:
       - "packages/**"
       - ".github/workflows/package-ci.yml"
   pull_request:
-    branches: ["master", "release", "beta"]
+    branches: ["master", "latest-release", "beta"]
     paths:
       - "packages/**"
       - ".github/workflows/package-ci.yml"
