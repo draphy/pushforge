@@ -7,10 +7,7 @@ module.exports = {
     [
       '@semantic-release/github',
       {
-        assets: [
-          { path: 'dist/**/*.js', label: 'JS distribution' },
-          { path: 'dist/**/*.d.ts', label: 'TypeScript declarations' },
-        ],
+        assets: [],
       },
     ],
   ],
