@@ -12,28 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      builder_changed: ${{ steps.filter.outputs.builder }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Needed for changeset detection
-
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            builder:
-              - 'packages/builder/**'
-              # Add more packages here as repo grows
-              # package2:
-              #   - 'packages/package2/**'
-
   release-builder:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.builder_changed == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -83,7 +62,3 @@ jobs:
         run: pnpm semantic-release
 
   # Add more jobs for additional packages as repo grows
-  # release-package2:
-  #   needs: detect-changes
-  #   if: needs.detect-changes.outputs.package2_changed == 'true'
-  #   ... (similar setup to release-builder)
