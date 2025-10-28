@@ -6,7 +6,10 @@
   "main": "dist/lib/main.js",
   "module": "dist/lib/main.js",
   "types": "dist/lib/main.d.ts",
-  "author": "David Raphi",
+  "author": {
+    "name": "David Raphi",
+    "email": "david@draphy.org"
+  },
   "bugs": {
     "url": "https://github.com/draphy/pushforge/issues"
   },

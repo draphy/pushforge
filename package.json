@@ -17,7 +17,10 @@
     "url": "https://github.com/draphy/pushforge"
   },
   "license": "MIT",
-  "author": "David Raphi",
+  "author": {
+    "name": "David Raphi",
+    "email": "david@draphy.org"
+  },
   "engines": {
     "node": ">=22.0.0"
   },
