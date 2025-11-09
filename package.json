@@ -22,7 +22,7 @@
     "email": "david@draphy.org"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=16.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
