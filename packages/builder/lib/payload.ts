@@ -40,6 +40,20 @@ const importClientKeys = async (
     decodedKey = new Uint8Array(Buffer.from(base64Key, 'base64'));
   }
 
+  // Validate p256dh key format: must be 65 bytes (uncompressed P-256 point)
+  // Format: 0x04 (1 byte) + x coordinate (32 bytes) + y coordinate (32 bytes)
+  if (decodedKey.byteLength !== 65) {
+    throw new Error(
+      `Invalid p256dh key: expected 65 bytes but got ${decodedKey.byteLength} bytes`,
+    );
+  }
+
+  if (decodedKey[0] !== 0x04) {
+    throw new Error(
+      `Invalid p256dh key: expected uncompressed point format (0x04 prefix) but got 0x${decodedKey[0].toString(16).padStart(2, '0')}`,
+    );
+  }
+
   const p256 = await crypto.subtle.importKey(
     'jwk',
     {
@@ -95,7 +109,7 @@ const derivePseudoRandomKey = async (
 const createContext = async (
   clientPublicKey: CryptoKey,
   localPublicKey: CryptoKey,
-): Promise<Uint8Array> => {
+): Promise<Uint8Array<ArrayBuffer>> => {
   const [clientKeyBytes, localKeyBytes] = await Promise.all([
     crypto.subtle.exportKey('raw', clientPublicKey),
     crypto.subtle.exportKey('raw', localPublicKey),
@@ -120,8 +134,8 @@ const createContext = async (
  */
 const deriveNonce = async (
   pseudoRandomKey: CryptoKey,
-  salt: Uint8Array,
-  context: Uint8Array,
+  salt: Uint8Array<ArrayBuffer>,
+  context: Uint8Array<ArrayBuffer>,
 ): Promise<ArrayBuffer> => {
   const nonceInfo = concatTypedArrays([
     new TextEncoder().encode('Content-Encoding: nonce\0'),
@@ -145,8 +159,8 @@ const deriveNonce = async (
  */
 const deriveContentEncryptionKey = async (
   pseudoRandomKey: CryptoKey,
-  salt: Uint8Array,
-  context: Uint8Array,
+  salt: Uint8Array<ArrayBuffer>,
+  context: Uint8Array<ArrayBuffer>,
 ): Promise<CryptoKey> => {
   const info = concatTypedArrays([
     new TextEncoder().encode('Content-Encoding: aesgcm\0'),
@@ -163,26 +177,51 @@ const deriveContentEncryptionKey = async (
 };
 
 /**
+ * Maximum payload size after accounting for encryption overhead.
+ * Web push payloads have an overall max size of 4KB (4096 bytes).
+ * With the required overhead (16 bytes auth tag + 2 bytes padding length),
+ * the actual max payload size is 4078 bytes.
+ */
+const MAX_PAYLOAD_SIZE = 4078;
+
+/**
+ * Minimum required size for padding length prefix (2 bytes).
+ */
+const PADDING_LENGTH_PREFIX_SIZE = 2;
+
+/**
  * Pads the payload to ensure it fits within the maximum allowed size for web push notifications.
  *
  * Web push payloads have an overall max size of 4KB (4096 bytes). With the
  * required overhead for encryption, the actual max payload size is 4078 bytes.
  *
  * @param {Uint8Array} payload - The original payload to be padded.
- * @returns {Uint8Array} The padded payload, including length information.
+ * @returns {Uint8Array<ArrayBuffer>} The padded payload, including length information.
+ * @throws {Error} Throws an error if the payload exceeds the maximum allowed size.
  */
-const padPayload = (payload: Uint8Array): Uint8Array => {
-  const MAX_PAYLOAD_SIZE = 4078; // Maximum payload size after encryption overhead
+const padPayload = (payload: Uint8Array): Uint8Array<ArrayBuffer> => {
+  const maxPayloadContentSize = MAX_PAYLOAD_SIZE - PADDING_LENGTH_PREFIX_SIZE;
 
-  let paddingSize = Math.round(Math.random() * 100); // Random padding size
-  const payloadSizeWithPadding = payload.byteLength + 2 + paddingSize;
-
-  if (payloadSizeWithPadding > MAX_PAYLOAD_SIZE) {
-    // Adjust padding size if the total exceeds the maximum allowed size
-    paddingSize -= payloadSizeWithPadding - MAX_PAYLOAD_SIZE;
+  if (payload.byteLength > maxPayloadContentSize) {
+    throw new Error(
+      `Payload too large. Maximum size is ${maxPayloadContentSize} bytes, but received ${payload.byteLength} bytes`,
+    );
   }
 
-  const paddingArray = new ArrayBuffer(2 + paddingSize);
+  // Calculate available space for padding
+  const availableSpace =
+    MAX_PAYLOAD_SIZE - PADDING_LENGTH_PREFIX_SIZE - payload.byteLength;
+
+  // Generate random padding size, clamped to available space
+  const maxRandomPadding = Math.min(100, availableSpace);
+  const paddingSize =
+    maxRandomPadding > 0
+      ? Math.floor(Math.random() * (maxRandomPadding + 1))
+      : 0;
+
+  const paddingArray = new ArrayBuffer(
+    PADDING_LENGTH_PREFIX_SIZE + paddingSize,
+  );
   new DataView(paddingArray).setUint16(0, paddingSize); // Store the length of the padding
 
   // Return the new payload with padding added
@@ -200,7 +239,7 @@ const padPayload = (payload: Uint8Array): Uint8Array => {
  */
 export const encryptPayload = async (
   localKeys: CryptoKeyPair,
-  salt: Uint8Array,
+  salt: Uint8Array<ArrayBuffer>,
   payload: string,
   target: PushSubscription,
 ): Promise<ArrayBuffer> => {

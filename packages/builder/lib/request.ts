@@ -4,6 +4,61 @@ import type { BuilderOptions, PushOptions } from './types.js';
 import { vapidHeaders } from './vapid.js';
 
 /**
+ * Validates that a JWK has the required properties for ECDSA P-256.
+ *
+ * @param {JsonWebKey} jwk - The JSON Web Key to validate.
+ * @throws {Error} Throws if the JWK is missing required properties or has invalid values.
+ */
+const validatePrivateJWK = (jwk: JsonWebKey): void => {
+  if (jwk.kty !== 'EC') {
+    throw new Error(
+      `Invalid JWK: 'kty' must be 'EC', received '${jwk.kty ?? 'undefined'}'`,
+    );
+  }
+
+  if (jwk.crv !== 'P-256') {
+    throw new Error(
+      `Invalid JWK: 'crv' must be 'P-256', received '${jwk.crv ?? 'undefined'}'`,
+    );
+  }
+
+  if (!jwk.x || typeof jwk.x !== 'string') {
+    throw new Error("Invalid JWK: missing or invalid 'x' coordinate");
+  }
+
+  if (!jwk.y || typeof jwk.y !== 'string') {
+    throw new Error("Invalid JWK: missing or invalid 'y' coordinate");
+  }
+
+  if (!jwk.d || typeof jwk.d !== 'string') {
+    throw new Error("Invalid JWK: missing or invalid 'd' (private key)");
+  }
+};
+
+/**
+ * Validates that the subscription endpoint is a valid HTTPS URL.
+ *
+ * @param {string} endpoint - The push subscription endpoint URL.
+ * @throws {Error} Throws if the endpoint is not a valid HTTPS URL.
+ */
+const validateEndpoint = (endpoint: string): void => {
+  let url: URL;
+  try {
+    url = new URL(endpoint);
+  } catch {
+    throw new Error(
+      `Invalid subscription endpoint: '${endpoint}' is not a valid URL`,
+    );
+  }
+
+  if (url.protocol !== 'https:') {
+    throw new Error(
+      `Invalid subscription endpoint: push endpoints must use HTTPS, received '${url.protocol}'`,
+    );
+  }
+};
+
+/**
  * Builds an HTTP request body and headers for sending a push notification.
  *
  * This function constructs the necessary components for a push notification request,
@@ -67,8 +122,18 @@ export async function buildPushHTTPRequest({
   headers: Record<string, string> | Headers;
 }> {
   // Parse the private JWK if it's a string
-  const jwk: JsonWebKey =
-    typeof privateJWK === 'string' ? JSON.parse(privateJWK) : privateJWK;
+  let jwk: JsonWebKey;
+  try {
+    jwk = typeof privateJWK === 'string' ? JSON.parse(privateJWK) : privateJWK;
+  } catch {
+    throw new Error('Invalid privateJWK: failed to parse JSON string');
+  }
+
+  // Validate the JWK structure
+  validatePrivateJWK(jwk);
+
+  // Validate the subscription endpoint
+  validateEndpoint(subscription.endpoint);
 
   const MAX_TTL = 24 * 60 * 60;
 
