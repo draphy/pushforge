@@ -3,33 +3,24 @@
 
 /**
  * A module that provides a cross-platform cryptographic interface.
+ * Uses globalThis.crypto which is available in:
+ * - Node.js 20+ (current LTS)
+ * - Browsers
+ * - Cloudflare Workers
+ * - Deno
+ * - Bun
+ * - Convex
  *
  * @module crypto
  */
 
-let isomorphicCrypto: Crypto;
-
-// Cloudflare Worker, Deno, Bun and Browser environments have crypto globally available
-if (globalThis.crypto?.subtle) {
-  isomorphicCrypto = globalThis.crypto;
-}
-// Node.js requires importing the webcrypto module
-else if (typeof process !== 'undefined' && process.versions?.node) {
-  try {
-    const { webcrypto } = await import('node:crypto');
-    isomorphicCrypto = webcrypto as unknown as Crypto;
-  } catch {
-    throw new Error(
-      'Crypto API not available in this Node.js environment. Please use Node.js 16+ which supports the Web Crypto API.',
-    );
-  }
-}
-// Fallback error for unsupported environments
-else {
+if (!globalThis.crypto?.subtle) {
   throw new Error(
-    'No Web Crypto API implementation available in this environment.',
+    'Web Crypto API not available. Ensure you are using Node.js 20+ or a modern runtime with globalThis.crypto support.',
   );
 }
+
+const isomorphicCrypto: Crypto = globalThis.crypto;
 
 /**
  * A cryptographic interface that provides methods for generating random values

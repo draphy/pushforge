@@ -1,13 +1,9 @@
 #!/usr/bin/env node
 import { getPublicKeyFromJwk } from '../utils.js';
 
-let webcrypto: Crypto;
-try {
-  const nodeCrypto = await import('node:crypto');
-  webcrypto = nodeCrypto.webcrypto as Crypto;
-} catch {
-  console.error('Error: This command requires Node.js environment.');
-  console.error("Please ensure you're running Node.js 16.0.0 or later.");
+if (!globalThis.crypto?.subtle) {
+  console.error('Error: Web Crypto API not available.');
+  console.error('Please ensure you are running Node.js 20.0.0 or later.');
   process.exit(1);
 }
 
@@ -15,13 +11,13 @@ async function generateVapidKeys(): Promise<void> {
   try {
     console.log('Generating VAPID keys...\n');
 
-    const keypair = await webcrypto.subtle.generateKey(
+    const keypair = await globalThis.crypto.subtle.generateKey(
       { name: 'ECDSA', namedCurve: 'P-256' },
       true,
       ['sign', 'verify'],
     );
 
-    const privateJWK = await webcrypto.subtle.exportKey(
+    const privateJWK = await globalThis.crypto.subtle.exportKey(
       'jwk',
       keypair.privateKey,
     );
@@ -42,7 +38,7 @@ async function generateVapidKeys(): Promise<void> {
       console.error('An unknown error occurred.');
     }
     console.error(
-      '\nThis tool requires Node.js v16.0.0 or later with WebCrypto API support.',
+      '\nThis tool requires Node.js 20.0.0 or later with Web Crypto API support.',
     );
     process.exit(1);
   }

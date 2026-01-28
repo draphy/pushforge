@@ -21,7 +21,7 @@ pnpm add @pushforge/builder
 
 - 🔑 Compliant VAPID authentication
 - 🔒 Web Push Protocol encryption
-- 🌐 Cross-platform compatibility (Node.js 16+, Browsers, Deno, Bun, Cloudflare Workers)
+- 🌐 Cross-platform compatibility (Node.js 20+, Browsers, Deno, Bun, Cloudflare Workers, Convex)
 - 🧩 TypeScript definitions included
 - 🛠️ Zero dependencies
 
@@ -71,8 +71,8 @@ You can also run `npx @pushforge/builder help` to see all available commands.
 
 **Requirements:**
 
-- Node.js 16.0.0 or later
-- The command uses the WebCrypto API which is built-in to Node.js 16+
+- Node.js 20.0.0 or later (current LTS)
+- The command uses the Web Crypto API via `globalThis.crypto`
 
 ### Step 2: Set Up Push Notifications in Your Web Application
 
@@ -154,14 +154,12 @@ if (response.status === 201) {
 
 PushForge works in all major JavaScript environments:
 
-### Node.js 16+
+### Node.js 20+
 
 ```js
 import { buildPushHTTPRequest } from "@pushforge/builder";
-// OR
-const { buildPushHTTPRequest } = require("@pushforge/builder");
 
-// Use normally - Node.js 16+ has Web Crypto API built-in
+// Use normally - Node.js 20+ has globalThis.crypto available
 ```
 
 ### Browsers
@@ -194,6 +192,89 @@ import { buildPushHTTPRequest } from "@pushforge/builder";
 ```js
 import { buildPushHTTPRequest } from "@pushforge/builder";
 ```
+
+### Convex
+
+```js
+import { buildPushHTTPRequest } from "@pushforge/builder";
+
+// Works in Convex actions
+```
+
+### Vercel Edge Runtime
+
+```js
+import { buildPushHTTPRequest } from "@pushforge/builder";
+
+// Works in Edge Runtime with globalThis.crypto
+```
+
+## Breaking Changes in v2.x
+
+### Node.js Version Requirement
+
+Starting from v2.0.0, PushForge requires **Node.js 20.0.0 or later**.
+
+**Why this change?**
+
+1. **Bundler Compatibility**: The previous implementation used top-level `await` for dynamic imports, which caused issues with bundlers like esbuild (used by Convex, Vercel, and others) that don't support top-level await.
+
+2. **Simplified Architecture**: By using `globalThis.crypto` (the standard Web Crypto API), the library now works consistently across all modern JavaScript runtimes without conditional imports.
+
+3. **EOL Node.js Versions**: Node.js 16, 17, and 18 have all reached end-of-life. Node.js 20 is the current LTS version.
+
+### Migration Guide
+
+#### From Node.js 16-18 to Node.js 20+
+
+**Recommended**: Upgrade to Node.js 20 (current LTS)
+
+```bash
+# Using nvm
+nvm install 20
+nvm use 20
+
+# Using fnm
+fnm install 20
+fnm use 20
+```
+
+#### If You Must Stay on Node.js 18
+
+Node.js 18 users can polyfill `globalThis.crypto` before importing the library:
+
+```javascript
+// Add this at the very top of your entry file
+import { webcrypto } from 'node:crypto';
+globalThis.crypto = webcrypto;
+
+// Then import PushForge
+import { buildPushHTTPRequest } from '@pushforge/builder';
+```
+
+Or run Node.js with the experimental flag:
+
+```bash
+node --experimental-global-webcrypto your-script.js
+```
+
+#### For Node.js 16-17 Users
+
+These versions are end-of-life and no longer receive security updates. We strongly recommend upgrading to Node.js 20+. If you cannot upgrade, you can use the polyfill approach above, but this is not officially supported.
+
+## Supported Environments
+
+| Environment | Version | Status |
+|-------------|---------|--------|
+| Node.js | 20+ | ✅ Fully supported |
+| Node.js | 18 | ⚠️ Requires polyfill or flag |
+| Node.js | 16-17 | ❌ EOL, not supported |
+| Browsers | Modern | ✅ Fully supported |
+| Cloudflare Workers | - | ✅ Fully supported |
+| Deno | 1.0+ | ✅ Fully supported |
+| Bun | 1.0+ | ✅ Fully supported |
+| Convex | - | ✅ Fully supported |
+| Vercel Edge | - | ✅ Fully supported |
 
 ## License
 

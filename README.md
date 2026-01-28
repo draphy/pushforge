@@ -7,7 +7,7 @@
 **Modern, Cross-Platform Web Push Notifications**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 </div>
@@ -22,7 +22,7 @@ PushForge is a comprehensive toolkit for implementing Web Push Notifications in 
 
 - 🔐 Compliant VAPID authentication
 - 📦 Streamlined payload encryption
-- 🌐 Works everywhere: Node.js, Browsers, Deno, Bun, Cloudflare Workers
+- 🌐 Works everywhere: Node.js 20+, Browsers, Deno, Bun, Cloudflare Workers, Convex, Vercel Edge
 - 🧩 Modular architecture for flexible implementation
 - 🛠️ Built with TypeScript for robust type safety
 
@@ -60,7 +60,7 @@ pushforge/
 
 ## Requirements
 
-- **Node.js**: v16.0.0 or higher (for WebCrypto API support)
+- **Node.js**: v20.0.0 or higher (current LTS with Web Crypto API)
 - **NPM**, **Yarn**, or **pnpm** for package management
 
 ## Development Setup
