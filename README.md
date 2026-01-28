@@ -1,133 +1,126 @@
-# PushForge 🚀
-
 <div align="center">
 
-<img src="images/pushforge_logo.png" alt="PushForge Logo" width="150" />
+<img src="images/pushforge_logo.png" alt="PushForge Logo" width="120" />
 
-**Modern, Cross-Platform Web Push Notifications**
+# PushForge
 
+**Web Push Notifications for the Modern Stack**
+
+[![npm version](https://img.shields.io/npm/v/@pushforge/builder.svg)](https://www.npmjs.com/package/@pushforge/builder)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![TypeScript](https://img.shields.io/badge/TypeScript-first--class-blue.svg)](https://www.typescriptlang.org/)
+
+Zero dependencies · Works everywhere · TypeScript-first
+
+[Documentation](packages/builder) · [npm](https://www.npmjs.com/package/@pushforge/builder) · [Report Bug](https://github.com/draphy/pushforge/issues)
 
 </div>
 
-## What is PushForge?
+---
 
-PushForge is a comprehensive toolkit for implementing Web Push Notifications in modern web applications. It handles the complex parts of push notifications so you can focus on building great user experiences.
+## The Problem
 
-**Zero dependencies. Cross-platform. TypeScript-first.**
+Traditional web push libraries like `web-push` rely on Node.js-specific APIs that don't work in modern edge runtimes:
 
-### Features
+```
+❌ Cloudflare Workers - "crypto.createECDH is not a function"
+❌ Vercel Edge - "https.request is not available"
+❌ Convex - "Top-level await is not supported"
+```
 
-- 🔐 Compliant VAPID authentication
-- 📦 Streamlined payload encryption
-- 🌐 Works everywhere: Node.js 20+, Browsers, Deno, Bun, Cloudflare Workers, Convex, Vercel Edge
-- 🧩 Modular architecture for flexible implementation
-- 🛠️ Built with TypeScript for robust type safety
+## The Solution
 
-## Packages
+PushForge uses standard Web APIs that work everywhere:
 
-| Package                                | Description                                                                       | Path                                    |
-| -------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------- |
-| [@pushforge/builder](packages/builder) | Core library for building push notification requests with proper VAPID encryption | [`packages/builder/`](packages/builder) |
+```typescript
+import { buildPushHTTPRequest } from "@pushforge/builder";
 
-_More packages coming soon!_
+const { endpoint, headers, body } = await buildPushHTTPRequest({
+  privateJWK: VAPID_PRIVATE_KEY,
+  subscription: userSubscription,
+  message: {
+    payload: { title: "Hello!", body: "This works everywhere." },
+    adminContact: "mailto:admin@example.com"
+  }
+});
+
+await fetch(endpoint, { method: "POST", headers, body });
+```
+
+## Why PushForge?
+
+| | PushForge | web-push |
+|---|:---:|:---:|
+| Dependencies | **0** | 5+ |
+| Cloudflare Workers | ✅ | [❌](https://github.com/web-push-libs/web-push/issues/718) |
+| Vercel Edge | ✅ | ❌ |
+| Convex | ✅ | ❌ |
+| Deno / Bun | ✅ | Limited |
+| TypeScript | Native | @types |
 
 ## Quick Start
 
 ```bash
-# Install the core package
+# Install
 npm install @pushforge/builder
 
-# Generate VAPID keys for push authentication
+# Generate VAPID keys
 npx @pushforge/builder vapid
 ```
 
-Check out the complete documentation in each package's README for detailed usage examples.
+**Frontend** - Subscribe users:
 
-## Project Structure
+```javascript
+const subscription = await registration.pushManager.subscribe({
+  userVisibleOnly: true,
+  applicationServerKey: VAPID_PUBLIC_KEY
+});
+// Send subscription.toJSON() to your server
+```
 
+**Backend** - Send notifications:
+
+```typescript
+import { buildPushHTTPRequest } from "@pushforge/builder";
+
+const { endpoint, headers, body } = await buildPushHTTPRequest({
+  privateJWK: process.env.VAPID_PRIVATE_KEY,
+  subscription,
+  message: {
+    payload: { title: "New Message", body: "You have a notification!" },
+    adminContact: "mailto:admin@example.com"
+  }
+});
+
+await fetch(endpoint, { method: "POST", headers, body });
 ```
-pushforge/
-├── packages/
-│   └── builder/         # Core push notification builder
-│       ├── lib/         # Source code
-│       ├── examples/    # Usage examples (coming soon...)
-│       └── README.md    # Package documentation
-└── README.md            # This file
-```
+
+See the [full documentation](packages/builder) for platform-specific examples (Cloudflare Workers, Vercel Edge, Convex, Deno, Bun).
+
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| [@pushforge/builder](packages/builder) | Core library for building push notification requests |
 
 ## Requirements
 
-- **Node.js**: v20.0.0 or higher (current LTS with Web Crypto API)
-- **NPM**, **Yarn**, or **pnpm** for package management
+- **Node.js 20+** or any runtime with Web Crypto API
+- Supported: Cloudflare Workers, Vercel Edge, Convex, Deno, Bun, modern browsers
 
-## Development Setup
+## Development
 
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/draphy/pushforge.git
-   cd pushforge
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   pnpm install
-   ```
-
-3. Build packages:
-
-   ```bash
-   pnpm build
-   ```
-
-4. Available Commands:
-
-   ```bash
-   # Format and lint code
-   pnpm biome:format   # Format code with Biome
-   pnpm biome:lint     # Lint code with Biome
-   pnpm biome:check    # Check code with Biome
-   pnpm biome:fix      # Fix issues automatically with Biome
-
-   # Type checking
-   pnpm type:check     # Run TypeScript type checking
-
-   # Commit checks (run before committing)
-   pnpm commit:check   # Run formatting, type checking and build
-   ```
+```bash
+git clone https://github.com/draphy/pushforge.git
+cd pushforge
+pnpm install
+pnpm build
+```
 
 ## Contributing
 
-Contributions are always welcome! We follow a structured workflow for contributions - see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-Whether you want to:
-
-- 🐛 Report a bug
-- 💡 Suggest new features
-- 🧪 Improve tests
-- 📚 Enhance documentation
-- 💻 Submit a PR
-
-We appreciate your help making PushForge better for everyone.
-
-## Reporting Issues
-
-Found a bug or have a feature request? Please [open an issue](https://github.com/draphy/pushforge/issues/new) and provide as much detail as possible.
-
-## Sponsorship
-
-If you find PushForge valuable, consider [sponsoring the project](https://github.com/sponsors/draphy). Your sponsorship helps maintain and improve the library.
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-<div align="center">
-  <sub>Built with ❤️ by <a href="https://github.com/draphy">David Raphi</a></sub>
-</div>
+MIT © [David Raphi](https://github.com/draphy)

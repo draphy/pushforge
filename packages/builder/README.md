@@ -1,280 +1,332 @@
 # PushForge Builder
 
-A robust, cross-platform Web Push notification library that handles VAPID authentication and payload encryption following the Web Push Protocol standard.
-
-## Installation
-
-Choose your preferred package manager:
+A lightweight, dependency-free Web Push library built on the standard Web Crypto API. Send push notifications from any JavaScript runtime.
 
 ```bash
-# NPM
 npm install @pushforge/builder
-
-# Yarn
-yarn add @pushforge/builder
-
-# pnpm
-pnpm add @pushforge/builder
 ```
 
-## Features
+## Why PushForge?
 
-- 🔑 Compliant VAPID authentication
-- 🔒 Web Push Protocol encryption
-- 🌐 Cross-platform compatibility (Node.js 20+, Browsers, Deno, Bun, Cloudflare Workers, Convex)
-- 🧩 TypeScript definitions included
-- 🛠️ Zero dependencies
+| | PushForge | web-push |
+|---|:---:|:---:|
+| Dependencies | **0** | 5+ (with nested deps) |
+| Cloudflare Workers | Yes | [No](https://github.com/web-push-libs/web-push/issues/718) |
+| Vercel Edge | Yes | No |
+| Convex | Yes | No |
+| Deno / Bun | Yes | Limited |
+| TypeScript | First-class | @types package |
 
-## Getting Started
+Traditional web push libraries rely on Node.js-specific APIs (`crypto.createECDH`, `https.request`) that don't work in modern edge runtimes. PushForge uses the standard [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API), making it portable across all JavaScript environments.
 
-### Step 1: Generate VAPID Keys
+## Quick Start
 
-PushForge includes a built-in CLI tool to generate VAPID keys for Web Push Authentication:
+### 1. Generate VAPID Keys
 
 ```bash
-# Generate VAPID keys using npx
 npx @pushforge/builder vapid
-
-# Using yarn
-yarn dlx @pushforge/builder vapid
-
-# Using pnpm
-pnpm dlx @pushforge/builder vapid
 ```
 
-This will output a public key and private key that you can use for VAPID authentication:
+This outputs a public key (for your frontend) and a private key in JWK format (for your server).
 
+### 2. Subscribe Users (Frontend)
+
+Use the VAPID public key to subscribe users to push notifications:
+
+```javascript
+// In your frontend application
+const registration = await navigator.serviceWorker.ready;
+
+const subscription = await registration.pushManager.subscribe({
+  userVisibleOnly: true,
+  applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY' // From step 1
+});
+
+// Send this subscription to your server
+// subscription.toJSON() returns:
+// {
+//   endpoint: "https://fcm.googleapis.com/fcm/send/...",
+//   keys: {
+//     p256dh: "BNcRd...",
+//     auth: "tBHI..."
+//   }
+// }
+await fetch('/api/subscribe', {
+  method: 'POST',
+  body: JSON.stringify(subscription)
+});
 ```
-Generating VAPID keys...
 
-VAPID Keys Generated Successfully
-
-Public Key:
-BDd0DtL3qQmnI7-JPwKMuGuFBC7VW9GjKP0qR-4C9Y9lJ2LLWR0pSI...
-
-Private Key (JWK):
-{
-  "alg": "ES256",
-  "key_ops": ["sign"],
-  "ext": true,
-  "kty": "EC",
-  "x": "N3QO0vepCacjv4k_AoyYa4UELtVb0aMo_SpH7gL1j2U",
-  "y": "ZSdiy1kdKUiOGjuoVgMbp4HwmQDz0nhHxPJLbFYh1j8",
-  "crv": "P-256",
-  "d": "8M9F5JCaEsXdTU1OpD4ODq-o5qZQcDmCYS6EHrC1o8E"
-}
-
-Store these keys securely. Never expose your private key.
-```
-
-You can also run `npx @pushforge/builder help` to see all available commands.
-
-**Requirements:**
-
-- Node.js 20.0.0 or later (current LTS)
-- The command uses the Web Crypto API via `globalThis.crypto`
-
-### Step 2: Set Up Push Notifications in Your Web Application
-
-To implement push notifications in your web application, you'll need to:
-
-1. Use the VAPID public key generated in Step 1
-2. Request notification permission from the user
-3. Subscribe to push notifications using the Push API
-4. Save the subscription information in your backend
-
-When implementing your service worker, handle push events to display notifications when they arrive:
-
-1. Listen for `push` events
-2. Parse the notification data
-3. Display the notification to the user
-4. Handle notification click events
-
-Refer to the [Push API documentation](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) and [Notifications API documentation](https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API) for detailed implementation.
-
-### Step 3: Send Push Notifications from Your Server
-
-On your backend server, use the VAPID private key to send push notifications:
+### 3. Send Notifications (Server)
 
 ```typescript
 import { buildPushHTTPRequest } from "@pushforge/builder";
 
-// Load the private key from your secure environment
-// This should be the private key from your VAPID key generation
-const privateJWK = process.env.VAPID_PRIVATE_KEY;
+// Your VAPID private key (JWK format from step 1)
+const privateJWK = {
+  kty: "EC",
+  crv: "P-256",
+  x: "...",
+  y: "...",
+  d: "..."
+};
 
-// User subscription from browser push API
+// The subscription object from the user's browser
 const subscription = {
-  endpoint: "https://fcm.googleapis.com/fcm/send/DEVICE_TOKEN",
+  endpoint: "https://fcm.googleapis.com/fcm/send/...",
   keys: {
-    p256dh: "USER_PUBLIC_KEY",
-    auth: "USER_AUTH_SECRET",
-  },
+    p256dh: "BNcRd...",
+    auth: "tBHI..."
+  }
 };
 
-// Create message with payload
-const message = {
-  payload: {
-    title: "New Message",
-    body: "You have a new message!",
-    icon: "/images/icon.png",
-  },
-  options: {
-    //Default value is 24 * 60 * 60 (24 hours).
-    //The VAPID JWT expiration claim (`exp`) must not exceed 24 hours from the time of the request.
-    ttl: 3600, // Time-to-live in seconds
-    urgency: "normal", // Options: "very-low", "low", "normal", "high"
-    topic: "updates", // Optional topic for replacing notifications
-  },
-  adminContact: "mailto:admin@example.com", //The contact information of the administrator
-};
-
-// Build the push notification request
-const {endpoint, headers, body} = await buildPushHTTPRequest({
+// Build and send the notification
+const { endpoint, headers, body } = await buildPushHTTPRequest({
   privateJWK,
-  message,
   subscription,
+  message: {
+    payload: {
+      title: "New Message",
+      body: "You have a new notification!",
+      icon: "/icon.png"
+    },
+    adminContact: "mailto:admin@example.com"
+  }
 });
 
-// Send the push notification
 const response = await fetch(endpoint, {
   method: "POST",
   headers,
-  body,
+  body
 });
 
 if (response.status === 201) {
-  console.log("Push notification sent successfully");
-} else {
-  console.error("Failed to send push notification", await response.text());
+  console.log("Notification sent");
 }
 ```
 
-## Cross-Platform Support
+## Understanding Push Subscriptions
 
-PushForge works in all major JavaScript environments:
+When a user subscribes to push notifications, the browser returns a `PushSubscription` object:
 
-### Node.js 20+
+```javascript
+{
+  // The unique URL for this user's browser push service
+  endpoint: "https://fcm.googleapis.com/fcm/send/dAPT...",
 
-```js
-import { buildPushHTTPRequest } from "@pushforge/builder";
+  keys: {
+    // Public key for encrypting messages (base64url)
+    p256dh: "BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA...",
 
-// Use normally - Node.js 20+ has globalThis.crypto available
+    // Authentication secret (base64url)
+    auth: "tBHItJI5svbpez7KI4CCXg=="
+  }
+}
 ```
 
-### Browsers
+| Field | Description |
+|-------|-------------|
+| `endpoint` | The push service URL. Each browser vendor has their own (Google FCM, Mozilla autopush, Apple APNs). |
+| `p256dh` | The user's public key for ECDH P-256 message encryption. |
+| `auth` | A shared 16-byte authentication secret. |
 
-```js
-import { buildPushHTTPRequest } from "@pushforge/builder";
+Store these securely on your server. You'll need them to send notifications to this user.
 
-// Use in a service worker for push notification handling
+## API Reference
+
+### `buildPushHTTPRequest(options)`
+
+Builds an HTTP request for sending a push notification.
+
+```typescript
+const { endpoint, headers, body } = await buildPushHTTPRequest({
+  privateJWK,    // Your VAPID private key (JWK object or JSON string)
+  subscription,  // User's push subscription
+  message: {
+    payload,       // Any JSON-serializable data
+    adminContact,  // Contact email (mailto:...) or URL
+    options: {     // Optional
+      ttl,         // Time-to-live in seconds (default: 86400)
+      urgency,     // "very-low" | "low" | "normal" | "high"
+      topic        // Topic for notification coalescing
+    }
+  }
+});
 ```
 
-### Deno
+**Returns:** `{ endpoint: string, headers: Headers, body: ArrayBuffer }`
 
-```js
-// Import from npm CDN
-import { buildPushHTTPRequest } from "https://cdn.jsdelivr.net/npm/@pushforge/builder/dist/lib/main.js";
-
-// Run with --allow-net permissions
-```
-
-### Bun
-
-```js
-import { buildPushHTTPRequest } from "@pushforge/builder";
-
-// Works natively in Bun with no special configuration
-```
+## Platform Examples
 
 ### Cloudflare Workers
 
-```js
+```javascript
+export default {
+  async fetch(request, env) {
+    const subscription = await request.json();
+
+    const { endpoint, headers, body } = await buildPushHTTPRequest({
+      privateJWK: JSON.parse(env.VAPID_PRIVATE_KEY),
+      subscription,
+      message: {
+        payload: { title: "Hello from the Edge!" },
+        adminContact: "mailto:admin@example.com"
+      }
+    });
+
+    return fetch(endpoint, { method: "POST", headers, body });
+  }
+};
+```
+
+### Vercel Edge Functions
+
+```typescript
 import { buildPushHTTPRequest } from "@pushforge/builder";
+
+export const config = { runtime: "edge" };
+
+export default async function handler(request: Request) {
+  const subscription = await request.json();
+
+  const { endpoint, headers, body } = await buildPushHTTPRequest({
+    privateJWK: JSON.parse(process.env.VAPID_PRIVATE_KEY!),
+    subscription,
+    message: {
+      payload: { title: "Edge Notification" },
+      adminContact: "mailto:admin@example.com"
+    }
+  });
+
+  await fetch(endpoint, { method: "POST", headers, body });
+  return new Response("Sent", { status: 200 });
+}
 ```
 
 ### Convex
 
-```js
+```typescript
+import { action } from "./_generated/server";
+import { buildPushHTTPRequest } from "@pushforge/builder";
+import { v } from "convex/values";
+
+export const sendPush = action({
+  args: { subscription: v.any(), title: v.string(), body: v.string() },
+  handler: async (ctx, { subscription, title, body }) => {
+    const { endpoint, headers, body: reqBody } = await buildPushHTTPRequest({
+      privateJWK: JSON.parse(process.env.VAPID_PRIVATE_KEY!),
+      subscription,
+      message: {
+        payload: { title, body },
+        adminContact: "mailto:admin@example.com"
+      }
+    });
+
+    await fetch(endpoint, { method: "POST", headers, body: reqBody });
+  }
+});
+```
+
+### Deno
+
+```typescript
+import { buildPushHTTPRequest } from "npm:@pushforge/builder";
+
+const { endpoint, headers, body } = await buildPushHTTPRequest({
+  privateJWK: JSON.parse(Deno.env.get("VAPID_PRIVATE_KEY")!),
+  subscription,
+  message: {
+    payload: { title: "Hello from Deno!" },
+    adminContact: "mailto:admin@example.com"
+  }
+});
+
+await fetch(endpoint, { method: "POST", headers, body });
+```
+
+### Bun
+
+```typescript
 import { buildPushHTTPRequest } from "@pushforge/builder";
 
-// Works in Convex actions
+const { endpoint, headers, body } = await buildPushHTTPRequest({
+  privateJWK: JSON.parse(Bun.env.VAPID_PRIVATE_KEY!),
+  subscription,
+  message: {
+    payload: { title: "Hello from Bun!" },
+    adminContact: "mailto:admin@example.com"
+  }
+});
+
+await fetch(endpoint, { method: "POST", headers, body });
 ```
 
-### Vercel Edge Runtime
+## Service Worker Setup
 
-```js
-import { buildPushHTTPRequest } from "@pushforge/builder";
-
-// Works in Edge Runtime with globalThis.crypto
-```
-
-## Breaking Changes in v2.x
-
-### Node.js Version Requirement
-
-Starting from v2.0.0, PushForge requires **Node.js 20.0.0 or later**.
-
-**Why this change?**
-
-1. **Bundler Compatibility**: The previous implementation used top-level `await` for dynamic imports, which caused issues with bundlers like esbuild (used by Convex, Vercel, and others) that don't support top-level await.
-
-2. **Simplified Architecture**: By using `globalThis.crypto` (the standard Web Crypto API), the library now works consistently across all modern JavaScript runtimes without conditional imports.
-
-3. **EOL Node.js Versions**: Node.js 16, 17, and 18 have all reached end-of-life. Node.js 20 is the current LTS version.
-
-### Migration Guide
-
-#### From Node.js 16-18 to Node.js 20+
-
-**Recommended**: Upgrade to Node.js 20 (current LTS)
-
-```bash
-# Using nvm
-nvm install 20
-nvm use 20
-
-# Using fnm
-fnm install 20
-fnm use 20
-```
-
-#### If You Must Stay on Node.js 18
-
-Node.js 18 users can polyfill `globalThis.crypto` before importing the library:
+Handle incoming push notifications in your service worker:
 
 ```javascript
-// Add this at the very top of your entry file
-import { webcrypto } from 'node:crypto';
+// sw.js
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() ?? {};
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon,
+      badge: data.badge,
+      data: data.url
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.notification.data) {
+    event.waitUntil(clients.openWindow(event.notification.data));
+  }
+});
+```
+
+## Requirements
+
+**Node.js 20+** or any runtime with Web Crypto API support.
+
+| Environment | Status |
+|-------------|--------|
+| Node.js 20+ | Fully supported |
+| Cloudflare Workers | Fully supported |
+| Vercel Edge | Fully supported |
+| Deno | Fully supported |
+| Bun | Fully supported |
+| Convex | Fully supported |
+| Modern Browsers | Fully supported |
+
+<details>
+<summary>Node.js 18 (requires polyfill)</summary>
+
+```javascript
+import { webcrypto } from "node:crypto";
 globalThis.crypto = webcrypto;
 
-// Then import PushForge
-import { buildPushHTTPRequest } from '@pushforge/builder';
+import { buildPushHTTPRequest } from "@pushforge/builder";
 ```
 
-Or run Node.js with the experimental flag:
+Or: `node --experimental-global-webcrypto your-script.js`
 
-```bash
-node --experimental-global-webcrypto your-script.js
-```
+</details>
 
-#### For Node.js 16-17 Users
+## Security
 
-These versions are end-of-life and no longer receive security updates. We strongly recommend upgrading to Node.js 20+. If you cannot upgrade, you can use the polyfill approach above, but this is not officially supported.
+PushForge validates all inputs before processing:
 
-## Supported Environments
-
-| Environment | Version | Status |
-|-------------|---------|--------|
-| Node.js | 20+ | ✅ Fully supported |
-| Node.js | 18 | ⚠️ Requires polyfill or flag |
-| Node.js | 16-17 | ❌ EOL, not supported |
-| Browsers | Modern | ✅ Fully supported |
-| Cloudflare Workers | - | ✅ Fully supported |
-| Deno | 1.0+ | ✅ Fully supported |
-| Bun | 1.0+ | ✅ Fully supported |
-| Convex | - | ✅ Fully supported |
-| Vercel Edge | - | ✅ Fully supported |
+- VAPID key structure (EC P-256 curve with required x, y, d parameters)
+- Subscription endpoint (must be valid HTTPS URL)
+- p256dh key format (65-byte uncompressed P-256 point)
+- Auth secret length (exactly 16 bytes)
+- Payload size (max 4KB per Web Push spec)
+- TTL bounds (max 24 hours per VAPID spec)
 
 ## License
 
