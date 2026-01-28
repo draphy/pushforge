@@ -13,7 +13,7 @@ try {
 
 async function generateVapidKeys(): Promise<void> {
   try {
-    console.log('Generating VAPID keys...');
+    console.log('Generating VAPID keys...\n');
 
     const keypair = await webcrypto.subtle.generateKey(
       { name: 'ECDSA', namedCurve: 'P-256' },
@@ -28,20 +28,12 @@ async function generateVapidKeys(): Promise<void> {
     const privateJWKWithAlg = { alg: 'ES256', ...privateJWK };
     const publicKey = getPublicKeyFromJwk(privateJWKWithAlg);
 
-    // Display in a nice formatted output
-    const resultText = `
-VAPID Keys Generated Successfully
-
-Public Key: 
-${publicKey}
-
-Private Key (JWK): 
-${JSON.stringify(privateJWKWithAlg, null, 2)}
-
-Store these keys securely. Never expose your private key.
-`;
-
-    console.log(resultText);
+    console.log('VAPID Keys Generated Successfully\n');
+    console.log('Public Key:');
+    console.log(publicKey);
+    console.log('\nPrivate Key (JWK):');
+    console.log(JSON.stringify(privateJWKWithAlg, null, 2));
+    console.log('\nStore these keys securely. Never expose your private key.');
   } catch (error: unknown) {
     console.error('Error generating VAPID keys:');
     if (error instanceof Error) {
@@ -56,19 +48,37 @@ Store these keys securely. Never expose your private key.
   }
 }
 
-// Simple command parsing
-const args = process.argv.slice(2);
-const command = args[0];
-
-if (command === 'generate-vapid-keys') {
-  generateVapidKeys();
-} else {
+function showHelp(): void {
   console.log(`
-PushForge CLI Tools
+PushForge CLI
 
-Usage:
-  npx @pushforge/builder generate-vapid-keys   Generate VAPID key pair for Web Push Authentication
+Usage: npx @pushforge/builder <command>
 
-For more information, visit: https://github.com/draphy/pushforge
-  `);
+Commands:
+  vapid   Generate VAPID key pair for Web Push authentication
+  help    Show this help message
+
+Examples:
+  npx @pushforge/builder vapid
+
+Documentation: https://github.com/draphy/pushforge#readme
+`);
+}
+
+// Parse command
+const args = process.argv.slice(2);
+const command = args[0]?.toLowerCase();
+
+switch (command) {
+  case 'vapid':
+    generateVapidKeys();
+    break;
+  case 'help':
+  case '--help':
+  case '-h':
+    showHelp();
+    break;
+  default:
+    showHelp();
+    process.exit(command ? 1 : 0);
 }

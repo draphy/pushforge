@@ -33,39 +33,41 @@ PushForge includes a built-in CLI tool to generate VAPID keys for Web Push Authe
 
 ```bash
 # Generate VAPID keys using npx
-npx @pushforge/builder generate-vapid-keys
+npx @pushforge/builder vapid
 
 # Using yarn
-yarn dlx @pushforge/builder generate-vapid-keys
+yarn dlx @pushforge/builder vapid
 
 # Using pnpm
-pnpm dlx @pushforge/builder generate-vapid-keys
+pnpm dlx @pushforge/builder vapid
 ```
 
 This will output a public key and private key that you can use for VAPID authentication:
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│                                                            │
-│ VAPID Keys Generated Successfully                          │
-│                                                            │
-│ Public Key:                                                │
-│ BDd0DtL3qQmnI7-JPwKMuGuFBC7VW9GjKP0qR-4C9Y9lJ2LLWR0pSI... │
-│                                                            │
-│ Private Key (JWK):                                         │
-│ {                                                          │
-│   "alg": "ES256",                                          │
-│   "kty": "EC",                                             │
-│   "crv": "P-256",                                          │
-│   "x": "N3QO0vepCacjv4k_AoyYa4UELtVb0aMo_SpH7gL1j2U",     │
-│   "y": "ZSdiy1kdKUiOGjuoVgMbp4HwmQDz0nhHxPJLbFYh1j8",     │
-│   "d": "8M9F5JCaEsXdTU1OpD4ODq-o5qZQcDmCYS6EHrC1o8E"      │
-│ }                                                          │
-│                                                            │
-│ Store these keys securely. Never expose your private key.  │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
+Generating VAPID keys...
+
+VAPID Keys Generated Successfully
+
+Public Key:
+BDd0DtL3qQmnI7-JPwKMuGuFBC7VW9GjKP0qR-4C9Y9lJ2LLWR0pSI...
+
+Private Key (JWK):
+{
+  "alg": "ES256",
+  "key_ops": ["sign"],
+  "ext": true,
+  "kty": "EC",
+  "x": "N3QO0vepCacjv4k_AoyYa4UELtVb0aMo_SpH7gL1j2U",
+  "y": "ZSdiy1kdKUiOGjuoVgMbp4HwmQDz0nhHxPJLbFYh1j8",
+  "crv": "P-256",
+  "d": "8M9F5JCaEsXdTU1OpD4ODq-o5qZQcDmCYS6EHrC1o8E"
+}
+
+Store these keys securely. Never expose your private key.
 ```
+
+You can also run `npx @pushforge/builder help` to see all available commands.
 
 **Requirements:**
 

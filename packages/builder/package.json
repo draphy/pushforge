@@ -40,7 +40,7 @@
     "semantic-release": "semantic-release"
   },
   "bin": {
-    "generate-vapid-keys": "./dist/lib/commandLine/keys.js"
+    "pushforge": "./dist/lib/commandLine/keys.js"
   },
   "devDependencies": {
     "@semantic-release/commit-analyzer": "^11.1.0",

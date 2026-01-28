@@ -41,7 +41,7 @@ _More packages coming soon!_
 npm install @pushforge/builder
 
 # Generate VAPID keys for push authentication
-npx @pushforge/builder generate-vapid-keys
+npx @pushforge/builder vapid
 ```
 
 Check out the complete documentation in each package's README for detailed usage examples.
