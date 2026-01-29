@@ -28,7 +28,7 @@ async function generateVapidKeys(): Promise<void> {
     console.log('Public Key:');
     console.log(publicKey);
     console.log('\nPrivate Key (JWK):');
-    console.log(JSON.stringify(privateJWKWithAlg, null, 2));
+    console.log(JSON.stringify(privateJWKWithAlg));
     console.log('\nStore these keys securely. Never expose your private key.');
   } catch (error: unknown) {
     console.error('Error generating VAPID keys:');
