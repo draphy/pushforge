@@ -104,9 +104,11 @@ export const getPublicKeyFromJwk = (jwk: JsonWebKey): string =>
  * Concatenates multiple Uint8Array instances into a single Uint8Array.
  *
  * @param {Uint8Array[]} arrays - An array of Uint8Array instances to concatenate.
- * @returns {Uint8Array} A new Uint8Array containing all the concatenated data.
+ * @returns {Uint8Array<ArrayBuffer>} A new Uint8Array containing all the concatenated data.
  */
-export const concatTypedArrays = (arrays: Uint8Array[]): Uint8Array => {
+export const concatTypedArrays = (
+  arrays: readonly Uint8Array[],
+): Uint8Array<ArrayBuffer> => {
   const length = arrays.reduce(
     (accumulator, current) => accumulator + current.byteLength,
     0,

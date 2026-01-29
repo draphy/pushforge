@@ -1,47 +1,35 @@
 #!/usr/bin/env node
 import { getPublicKeyFromJwk } from '../utils.js';
 
-let webcrypto: Crypto;
-try {
-  const nodeCrypto = await import('node:crypto');
-  webcrypto = nodeCrypto.webcrypto as Crypto;
-} catch {
-  console.error('Error: This command requires Node.js environment.');
-  console.error("Please ensure you're running Node.js 16.0.0 or later.");
+if (!globalThis.crypto?.subtle) {
+  console.error('Error: Web Crypto API not available.');
+  console.error('Please ensure you are running Node.js 20.0.0 or later.');
   process.exit(1);
 }
 
 async function generateVapidKeys(): Promise<void> {
   try {
-    console.log('Generating VAPID keys...');
+    console.log('Generating VAPID keys...\n');
 
-    const keypair = await webcrypto.subtle.generateKey(
+    const keypair = await globalThis.crypto.subtle.generateKey(
       { name: 'ECDSA', namedCurve: 'P-256' },
       true,
       ['sign', 'verify'],
     );
 
-    const privateJWK = await webcrypto.subtle.exportKey(
+    const privateJWK = await globalThis.crypto.subtle.exportKey(
       'jwk',
       keypair.privateKey,
     );
     const privateJWKWithAlg = { alg: 'ES256', ...privateJWK };
     const publicKey = getPublicKeyFromJwk(privateJWKWithAlg);
 
-    // Display in a nice formatted output
-    const resultText = `
-VAPID Keys Generated Successfully
-
-Public Key: 
-${publicKey}
-
-Private Key (JWK): 
-${JSON.stringify(privateJWKWithAlg, null, 2)}
-
-Store these keys securely. Never expose your private key.
-`;
-
-    console.log(resultText);
+    console.log('VAPID Keys Generated Successfully\n');
+    console.log('Public Key:');
+    console.log(publicKey);
+    console.log('\nPrivate Key (JWK):');
+    console.log(JSON.stringify(privateJWKWithAlg, null, 2));
+    console.log('\nStore these keys securely. Never expose your private key.');
   } catch (error: unknown) {
     console.error('Error generating VAPID keys:');
     if (error instanceof Error) {
@@ -50,25 +38,43 @@ Store these keys securely. Never expose your private key.
       console.error('An unknown error occurred.');
     }
     console.error(
-      '\nThis tool requires Node.js v16.0.0 or later with WebCrypto API support.',
+      '\nThis tool requires Node.js 20.0.0 or later with Web Crypto API support.',
     );
     process.exit(1);
   }
 }
 
-// Simple command parsing
-const args = process.argv.slice(2);
-const command = args[0];
-
-if (command === 'generate-vapid-keys') {
-  generateVapidKeys();
-} else {
+function showHelp(): void {
   console.log(`
-PushForge CLI Tools
+PushForge CLI
 
-Usage:
-  npx @pushforge/builder generate-vapid-keys   Generate VAPID key pair for Web Push Authentication
+Usage: npx @pushforge/builder <command>
 
-For more information, visit: https://github.com/draphy/pushforge
-  `);
+Commands:
+  vapid   Generate VAPID key pair for Web Push authentication
+  help    Show this help message
+
+Examples:
+  npx @pushforge/builder vapid
+
+Documentation: https://github.com/draphy/pushforge#readme
+`);
+}
+
+// Parse command
+const args = process.argv.slice(2);
+const command = args[0]?.toLowerCase();
+
+switch (command) {
+  case 'vapid':
+    generateVapidKeys();
+    break;
+  case 'help':
+  case '--help':
+  case '-h':
+    showHelp();
+    break;
+  default:
+    showHelp();
+    process.exit(command ? 1 : 0);
 }

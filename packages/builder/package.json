@@ -14,7 +14,7 @@
     "url": "https://github.com/draphy/pushforge/issues"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
     "semantic-release": "semantic-release"
   },
   "bin": {
-    "generate-vapid-keys": "./dist/lib/commandLine/keys.js"
+    "pushforge": "./dist/lib/commandLine/keys.js"
   },
   "devDependencies": {
     "@semantic-release/commit-analyzer": "^11.1.0",
