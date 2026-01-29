@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="images/pushforge_logo.png" alt="PushForge Logo" width="120" />
+<img src="images/logo.webp" alt="PushForge Logo" width="120" />
 
 # PushForge
 
@@ -14,9 +14,22 @@ Zero dependencies · Works everywhere · TypeScript-first
 
 [Documentation](packages/builder) · [npm](https://www.npmjs.com/package/@pushforge/builder) · [Report Bug](https://github.com/draphy/pushforge/issues)
 
+**[Try the Live Demo →](https://pushforge.draphy.org)**
+
 </div>
 
 ---
+
+## Live Demo
+
+See PushForge in action at **[pushforge.draphy.org](https://pushforge.draphy.org)** — a fully working test site powered by PushForge on Cloudflare Workers.
+
+- **Enable push notifications** on your device with a single toggle
+- **Send a test notification** to all active devices — anyone visiting the page can send and receive
+- **See it working across browsers** — Chrome, Firefox, Edge, Safari 16+, and more
+- Subscriptions auto-expire after 5 minutes — no permanent data stored
+
+The entire backend is a single Cloudflare Worker using `buildPushHTTPRequest()` from `@pushforge/builder` with zero additional dependencies.
 
 ## The Problem
 

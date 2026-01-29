@@ -1,10 +1,37 @@
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/draphy/pushforge/master/images/logo.webp" alt="PushForge Logo" width="120" />
+
 # PushForge Builder
 
-A lightweight, dependency-free Web Push library built on the standard Web Crypto API. Send push notifications from any JavaScript runtime.
+**A lightweight, dependency-free Web Push library built on the standard Web Crypto API.**
+
+[![npm version](https://img.shields.io/npm/v/@pushforge/builder.svg)](https://www.npmjs.com/package/@pushforge/builder)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-first--class-blue.svg)](https://www.typescriptlang.org/)
+
+Send push notifications from any JavaScript runtime · Zero dependencies
+
+[GitHub](https://github.com/draphy/pushforge) · [npm](https://www.npmjs.com/package/@pushforge/builder) · [Report Bug](https://github.com/draphy/pushforge/issues)
+
+**[Try the Live Demo →](https://pushforge.draphy.org)**
+
+</div>
+
+---
 
 ```bash
 npm install @pushforge/builder
 ```
+
+## Live Demo
+
+Try PushForge in your browser at **[pushforge.draphy.org](https://pushforge.draphy.org)** — a live test site running on Cloudflare Workers.
+
+- Toggle push notifications on, send a test message, and see it arrive in real time
+- Works across all supported browsers — Chrome, Firefox, Edge, Safari 16+
+- The backend is a single Cloudflare Worker using `buildPushHTTPRequest()` with zero additional dependencies
+- Subscriptions auto-expire after 5 minutes — no permanent data stored
 
 ## Why PushForge?
 
