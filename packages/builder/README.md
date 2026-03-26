@@ -40,9 +40,11 @@ Try PushForge in your browser at **[pushforge.draphy.org](https://pushforge.drap
 | Dependencies | **0** | 5+ (with nested deps) |
 | Cloudflare Workers | Yes | [No](https://github.com/web-push-libs/web-push/issues/718) |
 | Vercel Edge | Yes | No |
-| Convex | Yes | No |
+| Convex | Yes* | No |
 | Deno / Bun | Yes | Limited |
 | TypeScript | First-class | @types package |
+
+\* Convex requires `"use node";` directive. [See example](#convex).
 
 Traditional web push libraries rely on Node.js-specific APIs (`crypto.createECDH`, `https.request`) that don't work in modern edge runtimes. PushForge uses the standard [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API), making it portable across all JavaScript environments.
 
@@ -232,7 +234,11 @@ export default async function handler(request: Request) {
 
 ### Convex
 
+> **Note:** Convex's default runtime doesn't support ECDH operations required by Web Push. Add `"use node";` to use the Node.js runtime.
+
 ```typescript
+"use node";
+
 import { action } from "./_generated/server";
 import { buildPushHTTPRequest } from "@pushforge/builder";
 import { v } from "convex/values";
@@ -327,7 +333,7 @@ self.addEventListener('notificationclick', (event) => {
 | Vercel Edge | Fully supported |
 | Deno | Fully supported |
 | Bun | Fully supported |
-| Convex | Fully supported |
+| Convex | Requires `"use node";` ([example](#convex)) |
 | Modern Browsers | Fully supported |
 
 <details>

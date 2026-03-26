@@ -38,7 +38,6 @@ Traditional web push libraries like `web-push` rely on Node.js-specific APIs tha
 ```
 ❌ Cloudflare Workers - "crypto.createECDH is not a function"
 ❌ Vercel Edge - "https.request is not available"
-❌ Convex - "Top-level await is not supported"
 ```
 
 ## The Solution
@@ -67,9 +66,11 @@ await fetch(endpoint, { method: "POST", headers, body });
 | Dependencies | **0** | 5+ |
 | Cloudflare Workers | ✅ | [❌](https://github.com/web-push-libs/web-push/issues/718) |
 | Vercel Edge | ✅ | ❌ |
-| Convex | ✅ | ❌ |
+| Convex | ✅* | ❌ |
 | Deno / Bun | ✅ | Limited |
 | TypeScript | Native | @types |
+
+\* Requires `"use node";` directive — [see example](packages/builder#convex)
 
 ## Quick Start
 
