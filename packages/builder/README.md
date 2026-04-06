@@ -7,6 +7,7 @@
 **A lightweight, dependency-free Web Push library built on the standard Web Crypto API.**
 
 [![npm version](https://img.shields.io/npm/v/@pushforge/builder.svg)](https://www.npmjs.com/package/@pushforge/builder)
+[![npm downloads](https://img.shields.io/npm/dm/@pushforge/builder.svg)](https://www.npmjs.com/package/@pushforge/builder)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-first--class-blue.svg)](https://www.typescriptlang.org/)
 
