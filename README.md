@@ -15,22 +15,23 @@ Zero dependencies · Works everywhere · TypeScript-first
 
 [Documentation](packages/builder) · [npm](https://www.npmjs.com/package/@pushforge/builder) · [Report Bug](https://github.com/draphy/pushforge/issues)
 
-**[Try the Live Demo →](https://pushforge.draphy.org)**
+**[Try the Playground →](https://pushforge.draphy.org)**
 
 </div>
 
 ---
 
-## Live Demo
+## Playground
 
-See PushForge in action at **[pushforge.draphy.org](https://pushforge.draphy.org)** — a fully working test site powered by PushForge on Cloudflare Workers.
+Test PushForge at **[pushforge.draphy.org](https://pushforge.draphy.org)** — an interactive playground for testing push notifications, powered by Cloudflare Workers.
 
-- **Enable push notifications** on your device with a single toggle
-- **Send a test notification** to all active devices — anyone visiting the page can send and receive
-- **See it working across browsers** — Chrome, Firefox, Edge, Safari 16+, and more
-- Subscriptions auto-expire after 5 minutes — no permanent data stored
+- **Quick Test** — enable notifications, send test messages, see them arrive instantly
+- **Topic Channels** — test targeted notifications by subscribing to channels
+- **Notification Customization** — experiment with title, body, icon, image, action buttons, vibration
+- **Push Options** — test urgency (battery hints) and TTL (message expiry)
+- **Cross-Browser Testing** — works on Chrome, Firefox, Edge, Safari 16+
 
-The entire backend is a single Cloudflare Worker using `buildPushHTTPRequest()` from `@pushforge/builder` with zero additional dependencies.
+Subscriptions auto-expire (5 min for quick test, 1 hour for topics) — no permanent data stored. The backend is a single Cloudflare Worker using `buildPushHTTPRequest()` with zero dependencies.
 
 ## The Problem
 
@@ -103,7 +104,12 @@ const { endpoint, headers, body } = await buildPushHTTPRequest({
   subscription,
   message: {
     payload: { title: "New Message", body: "You have a notification!" },
-    adminContact: "mailto:admin@example.com"
+    adminContact: "mailto:admin@example.com",
+    options: {              // Optional push delivery settings
+      ttl: 3600,            // Message expires in 1 hour
+      urgency: "high",      // Battery priority hint
+      topic: "alerts"       // Replace pending message with same topic
+    }
   }
 });
 
