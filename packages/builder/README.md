@@ -15,7 +15,7 @@ Send push notifications from any JavaScript runtime · Zero dependencies
 
 [GitHub](https://github.com/draphy/pushforge) · [npm](https://www.npmjs.com/package/@pushforge/builder) · [Report Bug](https://github.com/draphy/pushforge/issues)
 
-**[Try the Live Demo →](https://pushforge.draphy.org)**
+**[Try the Playground →](https://pushforge.draphy.org)**
 
 </div>
 
@@ -25,14 +25,17 @@ Send push notifications from any JavaScript runtime · Zero dependencies
 npm install @pushforge/builder
 ```
 
-## Live Demo
+## Playground
 
-Try PushForge in your browser at **[pushforge.draphy.org](https://pushforge.draphy.org)** — a live test site running on Cloudflare Workers.
+Test PushForge in your browser at **[pushforge.draphy.org](https://pushforge.draphy.org)** — an interactive playground for testing push notifications, powered by Cloudflare Workers.
 
-- Toggle push notifications on, send a test message, and see it arrive in real time
-- Works across all supported browsers — Chrome, Firefox, Edge, Safari 16+
-- The backend is a single Cloudflare Worker using `buildPushHTTPRequest()` with zero additional dependencies
-- Subscriptions auto-expire after 5 minutes — no permanent data stored
+- **Quick Test** — enable notifications, send a test message, see it arrive in real time
+- **Topic Channels** — test targeted notifications by subscribing to specific channels
+- **Notification Customization** — experiment with title, body, icon, image, action buttons, vibration, click URL
+- **Push Options** — test urgency levels (battery hints) and TTL (message expiry)
+- **Cross-Browser** — test across Chrome, Firefox, Edge, Safari 16+
+- Subscriptions auto-expire (5 min for quick test, 1 hour for topics) — no permanent data stored
+- The backend is a single Cloudflare Worker using `buildPushHTTPRequest()` with zero dependencies
 
 ## Why PushForge?
 
@@ -176,15 +179,47 @@ const { endpoint, headers, body } = await buildPushHTTPRequest({
     payload,       // Any JSON-serializable data
     adminContact,  // Contact email (mailto:...) or URL
     options: {     // Optional
-      ttl,         // Time-to-live in seconds (default: 86400)
+      ttl,         // Time-to-live in seconds (default: 86400, max: 86400)
       urgency,     // "very-low" | "low" | "normal" | "high"
-      topic        // Topic for notification coalescing
+      topic        // Topic for notification replacement
     }
   }
 });
 ```
 
 **Returns:** `{ endpoint: string, headers: Headers, body: ArrayBuffer }`
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `privateJWK` | JsonWebKey \| string | Yes | Your VAPID private key (JWK object or JSON string) |
+| `subscription` | PushSubscription | Yes | User's push subscription with `endpoint` and `keys` |
+| `message.payload` | any | Yes | Any JSON-serializable data to send (see [Notification Payload](#notification-payload)) |
+| `message.adminContact` | string | Yes | Contact for push service (`mailto:you@example.com` or URL) |
+| `message.options` | object | No | Push delivery options (see below) |
+
+#### Push Options (Web Push Protocol Headers)
+
+These options control how the push service handles message delivery:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `ttl` | number | 86400 | Time-to-live in seconds. How long the push service retains the message if user is offline. Max 24 hours. |
+| `urgency` | string | - | Battery hint: `"very-low"` (ads), `"low"` (topic updates), `"normal"` (chat), `"high"` (calls/time-sensitive). |
+| `topic` | string | - | Topic identifier. New message with same topic replaces pending one at push service level (before delivery). |
+
+#### TypeScript Types
+
+For TypeScript users, these types are exported:
+
+```typescript
+import type { 
+  BuilderOptions,    // Parameter type for buildPushHTTPRequest
+  PushMessage,       // The message object type
+  PushSubscription   // The subscription object type
+} from "@pushforge/builder";
+```
 
 ## Platform Examples
 
@@ -295,6 +330,74 @@ const { endpoint, headers, body } = await buildPushHTTPRequest({
 await fetch(endpoint, { method: "POST", headers, body });
 ```
 
+## How It Works
+
+```
+Your Server (PushForge) → Push Service (FCM/APNs) → Service Worker → User's Device
+```
+
+**PushForge handles:**
+- Encrypts payload
+- Signs with VAPID
+- Sets ttl/urgency/topic headers
+
+**Your service worker handles:**
+- Displays notification (title, body, icon, actions, etc.)
+- Handles clicks
+
+## Notification Payload
+
+The `payload` field accepts any JSON-serializable data — PushForge encrypts and delivers it as-is. Your service worker receives this payload and passes it to the browser's `showNotification()` API.
+
+> **Note:** These are standard [Web Notifications API](https://developer.mozilla.org/en-US/docs/Web/API/Notification) options, not PushForge-specific. PushForge handles the transport; your service worker handles the display.
+
+Common fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Notification title (required) |
+| `body` | string | Notification body text |
+| `icon` | string | URL for the notification icon |
+| `badge` | string | URL for the badge (small monochrome icon) |
+| `image` | string | URL for a large image |
+| `dir` | string | Text direction: `"auto"`, `"ltr"`, or `"rtl"` |
+| `lang` | string | Language tag (e.g., `"en-US"`, `"es"`) |
+| `tag` | string | Tag for notification replacement (same tag = replace, not stack) |
+| `renotify` | boolean | Vibrate/alert again when replacing a notification with same tag |
+| `requireInteraction` | boolean | Keep notification visible until user interacts |
+| `silent` | boolean | Suppress sound and vibration |
+| `timestamp` | number | Timestamp in milliseconds (e.g., `Date.now()`) |
+| `vibrate` | number[] | Vibration pattern `[vibrate, pause, vibrate, ...]` |
+| `actions` | array | Action buttons (max 2): `[{ action: "id", title: "Label", icon?: "url" }]` |
+| `data` | object | Custom data (e.g., `{ url: "/page" }` for click handling) |
+
+Example with full options:
+
+```typescript
+const { endpoint, headers, body } = await buildPushHTTPRequest({
+  privateJWK,
+  subscription,
+  message: {
+    payload: {
+      title: "New Message",
+      body: "John: Hey, are you free?",
+      icon: "/icons/chat.png",
+      badge: "/icons/badge.png",
+      image: "/images/preview.jpg",
+      tag: "chat-john",
+      renotify: true,
+      actions: [
+        { action: "reply", title: "Reply" },
+        { action: "dismiss", title: "Dismiss" }
+      ],
+      data: { url: "/chat/john", messageId: "123" }
+    },
+    adminContact: "mailto:admin@example.com",
+    options: { urgency: "high", ttl: 3600 }
+  }
+});
+```
+
 ## Service Worker Setup
 
 Handle incoming push notifications in your service worker:
@@ -309,7 +412,17 @@ self.addEventListener('push', (event) => {
       body: data.body,
       icon: data.icon,
       badge: data.badge,
-      data: data.url
+      image: data.image,
+      dir: data.dir,
+      lang: data.lang,
+      tag: data.tag,
+      renotify: data.renotify,
+      requireInteraction: data.requireInteraction,
+      silent: data.silent,
+      timestamp: data.timestamp,
+      vibrate: data.vibrate,
+      actions: data.actions,
+      data: data.data
     })
   );
 });
@@ -317,9 +430,15 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  if (event.notification.data) {
-    event.waitUntil(clients.openWindow(event.notification.data));
+  // Handle action button clicks
+  if (event.action === 'reply') {
+    clients.openWindow('/chat?action=reply');
+    return;
   }
+
+  // Handle main notification click
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(clients.openWindow(url));
 });
 ```
 
@@ -362,6 +481,10 @@ PushForge validates all inputs before processing:
 - Payload size (max 4KB per Web Push spec)
 - TTL bounds (max 24 hours per VAPID spec)
 
+## Contributing
+
+Contributions welcome! See [CONTRIBUTING.md](https://github.com/draphy/pushforge/blob/master/CONTRIBUTING.md) for guidelines.
+
 ## License
 
-MIT
+MIT © [David Raphi](https://github.com/draphy)
