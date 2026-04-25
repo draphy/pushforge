@@ -17,7 +17,7 @@ export const base64UrlEncode = (
 
   // Use environment-specific encoding
   let base64: string;
-  if (typeof globalThis !== 'undefined' && 'btoa' in globalThis) {
+  if (typeof globalThis !== 'undefined' && typeof globalThis.btoa === 'function') {
     // Browser environment
     base64 = globalThis.btoa(text);
   } else {
@@ -61,7 +61,7 @@ export const base64UrlDecode = (input: string): ArrayBuffer => {
   const base64 = base64UrlDecodeString(input);
 
   // Decode based on environment
-  if (typeof globalThis !== 'undefined' && 'atob' in globalThis) {
+  if (typeof globalThis !== 'undefined' && typeof globalThis.atob === 'function') {
     // Browser environment
     const binaryString = globalThis.atob(base64);
     const bytes = new Uint8Array(binaryString.length);
@@ -71,5 +71,9 @@ export const base64UrlDecode = (input: string): ArrayBuffer => {
     return bytes.buffer;
   }
   // Node.js environment
-  return Buffer.from(base64, 'base64').buffer;
+  const buffer = Buffer.from(base64, 'base64');
+  return buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength,
+  );
 };

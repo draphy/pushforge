@@ -216,7 +216,7 @@ const padPayload = (payload: Uint8Array): Uint8Array<ArrayBuffer> => {
   const maxRandomPadding = Math.min(100, availableSpace);
   const paddingSize =
     maxRandomPadding > 0
-      ? Math.floor(Math.random() * (maxRandomPadding + 1))
+      ? crypto.getRandomValues(new Uint8Array(1))[0] % (maxRandomPadding + 1)
       : 0;
 
   const paddingArray = new ArrayBuffer(
