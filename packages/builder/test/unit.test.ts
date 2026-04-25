@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest';
+import { base64UrlDecode } from '../lib/base64.js';
 import { buildPushHTTPRequest } from '../lib/main.js';
 import type {
   BuilderOptions,
@@ -214,6 +215,35 @@ describe('Subscription Keys Validation', () => {
         createOptions({ subscription: invalidSubscription }),
       ),
     ).rejects.toThrow('Invalid input');
+  });
+});
+
+// ============================================================================
+// Base64 Decoding Tests
+// ============================================================================
+describe('Base64 URL Decoding', () => {
+  test('decodes to exact byte length in default runtime path', () => {
+    const decoded = new Uint8Array(base64UrlDecode('AQ'));
+
+    expect(decoded).toEqual(new Uint8Array([1]));
+    expect(decoded.byteLength).toBe(1);
+  });
+
+  test('decodes to exact byte length in Buffer fallback path', () => {
+    const originalAtob = globalThis.atob;
+    // Force Node fallback path to verify sliced ArrayBuffer behavior.
+    // `Buffer#buffer` alone would expose backing store, not exact bytes.
+    // @ts-expect-error test override
+    globalThis.atob = undefined;
+
+    try {
+      const decoded = new Uint8Array(base64UrlDecode('AQ'));
+
+      expect(decoded).toEqual(new Uint8Array([1]));
+      expect(decoded.byteLength).toBe(1);
+    } finally {
+      globalThis.atob = originalAtob;
+    }
   });
 });
 
